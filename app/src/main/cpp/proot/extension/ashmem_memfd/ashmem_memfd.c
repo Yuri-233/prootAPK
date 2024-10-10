@@ -6,6 +6,7 @@
 #include <linux/memfd.h>  /* MFD_CLOEXEC  */
 
 #include <talloc.h>
+#include <string.h>
 
 #include "extension/extension.h"
 #include "path/path.h"

@@ -479,80 +479,80 @@ extern unsigned char WEAK _binary_loader_m32_exe_end;
  * error occurred, otherwise it returns the path to the extracted
  * loader.  Note: @tracee is only used for notification purpose.
  */
-static char *extract_loader(const Tracee *tracee, bool wants_32bit_version)
-{
-	char path[PATH_MAX];
-	size_t status2;
-	void *start;
-	size_t size;
-	int status;
-	int fd;
-
-	char *loader_path = NULL;
-	FILE *file = NULL;
-
-	file = open_temp_file(NULL, "prooted");
-	if (file == NULL)
-		goto end;
-	fd = fileno(file);
-
-	if (wants_32bit_version) {
-		start = (void *) &_binary_loader_m32_exe_start;
-		size  = (size_t) (&_binary_loader_m32_exe_end - &_binary_loader_m32_exe_start);
-	}
-	else {
-		start = (void *) &_binary_loader_exe_start;
-		size  = (size_t) (&_binary_loader_exe_end - &_binary_loader_exe_start);
-	}
-
-	status2 = write(fd, start, size);
-	if (status2 != size) {
-		note(tracee, ERROR, SYSTEM, "can't write the loader");
-		goto end;
-	}
-
-	status = fchmod(fd, S_IRUSR|S_IXUSR);
-	if (status < 0) {
-		note(tracee, ERROR, SYSTEM, "can't change loader permissions (u+rx)");
-		goto end;
-	}
-
-	status = readlink_proc_pid_fd(getpid(), fd, path);
-	if (status < 0) {
-		note(tracee, ERROR, INTERNAL, "can't retrieve loader path (/proc/self/fd/)");
-		goto end;
-	}
-
-	status = access(path, X_OK);
-	if (status < 0) {
-		note(tracee, ERROR, INTERNAL,
-			"it seems the current temporary directory (%s) "
-			"is mounted with no execution permission.",
-			get_temp_directory());
-		note(tracee, INFO, USER,
-			"Please set PROOT_TMP_DIR env. variable to an alternate "
-			"location ('%s/tmp' for example).", get_root(tracee));
-		goto end;
-	}
-
-	loader_path = talloc_strdup(talloc_autofree_context(), path);
-	if (loader_path == NULL) {
-		note(tracee, ERROR, INTERNAL, "can't allocate memory");
-		goto end;
-	}
-
-	if (tracee->verbose >= 2)
-		note(tracee, INFO, INTERNAL, "loader: %s", loader_path);
-
-end:
-	if (file != NULL) {
-		status = fclose(file);
-		if (status < 0)
-			note(tracee, WARNING, SYSTEM, "can't close loader file");
-	}
-
-	return loader_path;
-}
+//static char *extract_loader(const Tracee *tracee, bool wants_32bit_version)
+//{
+//	char path[PATH_MAX];
+//	size_t status2;
+//	void *start;
+//	size_t size;
+//	int status;
+//	int fd;
+//
+//	char *loader_path = NULL;
+//	FILE *file = NULL;
+//
+//	file = open_temp_file(NULL, "prooted");
+//	if (file == NULL)
+//		goto end;
+//	fd = fileno(file);
+//
+//	if (wants_32bit_version) {
+//		start = (void *) &_binary_loader_m32_exe_start;
+//		size  = (size_t) (&_binary_loader_m32_exe_end - &_binary_loader_m32_exe_start);
+//	}
+//	else {
+//		start = (void *) &_binary_loader_exe_start;
+//		size  = (size_t) (&_binary_loader_exe_end - &_binary_loader_exe_start);
+//	}
+//
+//	status2 = write(fd, start, size);
+//	if (status2 != size) {
+//		note(tracee, ERROR, SYSTEM, "can't write the loader");
+//		goto end;
+//	}
+//
+//	status = fchmod(fd, S_IRUSR|S_IXUSR);
+//	if (status < 0) {
+//		note(tracee, ERROR, SYSTEM, "can't change loader permissions (u+rx)");
+//		goto end;
+//	}
+//
+//	status = readlink_proc_pid_fd(getpid(), fd, path);
+//	if (status < 0) {
+//		note(tracee, ERROR, INTERNAL, "can't retrieve loader path (/proc/self/fd/)");
+//		goto end;
+//	}
+//
+//	status = access(path, X_OK);
+//	if (status < 0) {
+//		note(tracee, ERROR, INTERNAL,
+//			"it seems the current temporary directory (%s) "
+//			"is mounted with no execution permission.",
+//			get_temp_directory());
+//		note(tracee, INFO, USER,
+//			"Please set PROOT_TMP_DIR env. variable to an alternate "
+//			"location ('%s/tmp' for example).", get_root(tracee));
+//		goto end;
+//	}
+//
+//	loader_path = talloc_strdup(talloc_autofree_context(), path);
+//	if (loader_path == NULL) {
+//		note(tracee, ERROR, INTERNAL, "can't allocate memory");
+//		goto end;
+//	}
+//
+//	if (tracee->verbose >= 2)
+//		note(tracee, INFO, INTERNAL, "loader: %s", loader_path);
+//
+//end:
+//	if (file != NULL) {
+//		status = fclose(file);
+//		if (status < 0)
+//			note(tracee, WARNING, SYSTEM, "can't close loader file");
+//	}
+//
+//	return loader_path;
+//}
 #endif
 
 /**
@@ -571,19 +571,19 @@ static inline const char *get_loader_path(const Tracee *tracee)
 #else
 	static char *loader_path = NULL;
 
-#if defined(HAS_LOADER_32BIT)
-	static char *loader32_path = NULL;
-
-	if (IS_CLASS32(tracee->load_info->elf_header)) {
-		loader32_path = loader32_path ?: getenv("PROOT_LOADER_32") ?: extract_loader(tracee, true);
-		return loader32_path;
-	}
-	else
-#endif
-	{
-		loader_path = loader_path ?: getenv("PROOT_LOADER") ?: extract_loader(tracee, false);
-		return loader_path;
-	}
+//#if defined(HAS_LOADER_32BIT)
+//	static char *loader32_path = NULL;
+//
+//	if (IS_CLASS32(tracee->load_info->elf_header)) {
+//		loader32_path = loader32_path ?: getenv("PROOT_LOADER_32") ?: extract_loader(tracee, true);
+//		return loader32_path;
+//	}
+//	else
+//#endif
+//	{
+//		loader_path = loader_path ?: getenv("PROOT_LOADER") ?: extract_loader(tracee, false);
+//		return loader_path;
+//	}
 #endif
 }
 

@@ -100,9 +100,9 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         proot/extension/link2symlink/link2symlink.c
         proot/extension/fix_symlink_size/fix_symlink_size.c
 
-#        talloc/lib/replace/cwrap.c
-#        talloc/lib/replace/replace.c
-#        talloc/talloc.c
+        talloc/lib/replace/cwrap.c
+        talloc/lib/replace/replace.c
+        talloc/talloc.c
 #
 #        native-lib.cpp
 
